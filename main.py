@@ -1,4 +1,4 @@
-# Telegram Bot ChatGPT with history
+# Telegram Bot ChatGPT with history (context)
 from rich import print
 import config
 import openai
