@@ -17,6 +17,9 @@ async def gpt_answer(message: types.Message):
     # Соединяем предыдущие сообщения в истории диалога в одну строку
     conversation_text = "\n".join(conversation_history)
 
+    user = message.from_user
+    print(user)
+
     # Формируем запрос к API OpenAI с использованием истории диалога
     question = message.text
     print(f"[bold white]Q: {question}[/bold white]")
