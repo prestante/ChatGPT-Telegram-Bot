@@ -19,6 +19,10 @@ async def gpt_answer(message: types.Message):
     if user.id not in conversation_history:
         print(user)
 
+    # Не реагируем на команду /start
+    if message.text.lower() == "/start":
+        return
+
     # Получаем историю диалога для текущего пользователя или создаем новую
     user_history = conversation_history.get(user.id, [])
 
