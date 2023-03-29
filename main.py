@@ -1,43 +1,45 @@
 # Telegram Bot ChatGPT with history (context)
+from aiogram import Bot, Dispatcher, executor, types
 from rich import print
 import config
 import openai
-from aiogram import Bot, Dispatcher, executor, types
 
 openai.api_key = config.OPENAI_TOKEN  # init openai
 bot = Bot(token=config.TOKEN)  # init aiogram
 dp = Dispatcher(bot)  # dispatcher bot
-conversation_history = []  # dialog history
+conversation_history = {}  # dialog history
 
 
 @dp.message_handler()
 async def gpt_answer(message: types.Message):
     global conversation_history
 
-    # Соединяем предыдущие сообщения в истории диалога в одну строку
-    conversation_text = "\n".join(conversation_history)
-
+    # Вычленяем пользователя из сообщения и печатаем в консоль инфу о юзере, если он новый
     user = message.from_user
-    print(user)
+    if user.id not in conversation_history:
+        print(user)
 
-    # Формируем запрос к API OpenAI с использованием истории диалога
+    # Получаем историю диалога для текущего пользователя или создаем новую
+    user_history = conversation_history.get(user.id, [])
+
+    # Формируем запрос к API OpenAI с использованием истории диалога текущего пользователя
     question = message.text
-    print(f"[bold white]Q: {question}[/bold white]")
+    print(f"[bold white]{user.username}: {question}[/bold white]")
     if question.lower() in ["сброс", "reset", "clear", "cls", "restart"]:
-        conversation_history = []
-        answer = "Context has been cleared"
+        conversation_history[user.id] = []
+        answer = f"Context for {user.username} has been cleared"
         print(answer)
         await message.answer(answer)
         return
-    prompt = f"{conversation_text}\nQ: {question}\nA: "
-    response = openai.Completion.create(
-        engine="text-davinci-003", prompt=prompt, max_tokens=2048, n=1, stop=None, temperature=0.5
-    )
+    user_history.append({"role": "user", "content": question})
+    answer = openai.ChatCompletion.create(
+        model="gpt-4", messages=user_history
+    ).choices[0].message.content
 
-    # Обновляем историю диалога
-    answer = response.choices[0].text.strip()
-    print(f"[bold yellow]A: {answer}[/bold yellow]")
-    conversation_history.append(f"Q: {question}\nA: {answer}")
+    # Обновляем историю диалога для текущего пользователя
+    print(f"[bold yellow]ChatGPT: {answer}[/bold yellow]")
+    user_history.append({"role": "assistant", "content": answer})
+    conversation_history[user.id] = user_history
     await message.answer(answer)
 
 # run long-polling
