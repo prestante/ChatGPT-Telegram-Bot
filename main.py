@@ -22,7 +22,7 @@ async def gpt_answer(message: types.Message):
     # Вычленяем пользователя из сообщения и печатаем в консоль инфу о юзере, если он новый
     user = message.from_user
     if user.id not in conversation_history:
-        print(user)
+        print(f"[bold magenta]{dt()} - {user}[/bold magenta]")
 
     # Не реагируем на команду /start
     if message.text.lower() == "/start":
@@ -37,7 +37,7 @@ async def gpt_answer(message: types.Message):
     if question.lower() in ["сброс", "reset", "clear", "cls", "restart"]:
         conversation_history[user.id] = []
         answer = f"Context for {user.username} has been cleared"
-        print(answer)
+        print(f"[white]{dt()} - {answer}[/white]")
         await message.answer(answer)
         return
     user_history.append({"role": "user", "content": question})
