@@ -1,6 +1,7 @@
 # Telegram Bot ChatGPT with history (context)
 from aiogram import Bot, Dispatcher, executor, types
 from rich import print
+from datetime import datetime
 import config
 import openai
 
@@ -8,6 +9,10 @@ openai.api_key = config.OPENAI_TOKEN  # init openai
 bot = Bot(token=config.TOKEN)  # init aiogram
 dp = Dispatcher(bot)  # dispatcher bot
 conversation_history = {}  # dialog history
+
+
+def dt():
+    return datetime.now().isoformat(timespec='milliseconds', sep=' ')
 
 
 @dp.message_handler()
@@ -28,7 +33,7 @@ async def gpt_answer(message: types.Message):
 
     # Формируем запрос к API OpenAI с использованием истории диалога текущего пользователя
     question = message.text
-    print(f"[green]{user.username}: [bold]{question}[/bold][green]")
+    print(f"[white]{dt()} - [/white][green]{user.username}: [bold]{question}[/bold][green]")
     if question.lower() in ["сброс", "reset", "clear", "cls", "restart"]:
         conversation_history[user.id] = []
         answer = f"Context for {user.username} has been cleared"
@@ -41,7 +46,7 @@ async def gpt_answer(message: types.Message):
     ).choices[0].message.content
 
     # Обновляем историю диалога для текущего пользователя
-    print(f"[cyan]ChatGPT: [bold]{answer}[/bold][cyan]")
+    print(f"[white]{dt()} - [/white][cyan]ChatGPT: [bold]{answer}[/bold][cyan]")
     user_history.append({"role": "assistant", "content": answer})
     conversation_history[user.id] = user_history
     await message.answer(answer)
