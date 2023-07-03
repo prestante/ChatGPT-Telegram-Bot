@@ -43,6 +43,7 @@ async def gpt_answer(message: types.Message):
     user_history.append({"role": "user", "content": question})
     answer = openai.ChatCompletion.create(
         model="gpt-4", messages=user_history
+        #model="gpt-3.5-turbo", messages=user_history
     ).choices[0].message.content
 
     # Обновляем историю диалога для текущего пользователя
