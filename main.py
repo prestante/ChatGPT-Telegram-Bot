@@ -52,7 +52,7 @@ async def gpt_answer(message: types.Message):
 
     # Получаем и пишем в консоль вопрос от пользователя
     question = message.text
-    #print(f"[white]{dt()} - [/white][green]{user.username}: [bold]{question}[/bold][/green]")
+    print(f"[white]{dt()} - [/white][green]{user.username}: [bold]{question}[/bold][/green]")
 
     # Обнуляем контекст если пришло сообщение о сбросе
     if question.lower() in ["сброс", "reset", "clear", "cls", "restart"]:
@@ -65,10 +65,9 @@ async def gpt_answer(message: types.Message):
     user_history.append({"role": "user", "content": question})
 
     # Получаем ответ от API OpenAI
-    answer = openai.ChatCompletion.create(
-        model=model, messages=user_history
-    ).choices[0].message.content
-    #print(f"[white]{dt()} - [/white][cyan]ChatGPT: [bold]{answer}[/bold][/cyan]")
+    answer = openai.ChatCompletion.create(model=model, messages=user_history).choices[0].message.content
+    print(f"[white]{dt()} - [/white][cyan]ChatGPT: [bold]{answer}[/bold][/cyan]")
+
     user_history.append({"role": "assistant", "content": answer})
 
     # Обновляем историю диалога для текущего пользователя
@@ -82,8 +81,6 @@ async def gpt_answer(message: types.Message):
         await message.answer(clear_message, parse_mode=types.ParseMode.HTML)
         print(f"[black]{dt()}[/black][gray] - Conversation history is too big, clearing...[/gray]")
         conversation_history[user.id] = conversation_history[user.id][-4:]
-
-    print(conversation_history[user.id])
 
 # run long-polling
 if __name__ == "__main__":
