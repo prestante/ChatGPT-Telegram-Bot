@@ -5,6 +5,10 @@ from rich import print
 import config
 import openai
 import tiktoken
+import logging
+import traceback
+from rich.traceback import install
+install()
 
 openai.api_key = config.OPENAI_TOKEN  # init openai
 bot = Bot(token=config.TOKEN)  # init aiogram
@@ -65,7 +69,8 @@ async def gpt_answer(message: types.Message):
     user_history.append({"role": "user", "content": question})
 
     # Получаем ответ от API OpenAI
-    answer = openai.ChatCompletion.create(model=model, messages=user_history).choices[0].message.content
+    #answer = openai.ChatCompletion.create(model=model, messages=user_history).choices[0].message.content
+    answer = openai.ChatCompletion.create(model=model, messages=user_history, timeout=30).choices[0].message.content
     print(f"[white]{dt()} - [/white][cyan]ChatGPT: [bold]{answer}[/bold][/cyan]")
 
     user_history.append({"role": "assistant", "content": answer})
@@ -84,4 +89,7 @@ async def gpt_answer(message: types.Message):
 
 # run long-polling
 if __name__ == "__main__":
-    executor.start_polling(dp, skip_updates=True)
+    try:
+        executor.start_polling(dp, skip_updates=True)
+    except Exception as e:
+        print("[red] {}".format(traceback.format_exc()))
