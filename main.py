@@ -91,4 +91,4 @@ if __name__ == "__main__":
     try:
         executor.start_polling(dp, skip_updates=True)
     except Exception as e:
-        print("[red] {}".format(traceback.format_exc()))
+        print("[red]An error occurred: {}".format(e.__class__.__name__))
