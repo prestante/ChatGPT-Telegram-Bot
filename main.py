@@ -42,7 +42,11 @@ async def gpt_answer(message: types.Message):
     if user.id not in conversation_history:
         print(f"[bold magenta]{dt()} - {user}[/bold magenta]")
 
-    # Проверяем есть ли юзер в списке allowed_users
+    # Получаем и пишем в консоль вопрос от пользователя
+    question = message.text
+    print(f"[white]{dt()} - [/white][green]{user.username}: [bold]{question}[/bold][/green]")
+
+    # Проверяем есть ли юзер в списке allowed_users, если нет - пишем в консоль и выходим
     if user.id not in approved_users:
         print(f"[bold red]{dt()} - User {user.id} is not in the allowed_users list[/bold red]")
         return
@@ -53,10 +57,6 @@ async def gpt_answer(message: types.Message):
 
     # Получаем историю диалога для текущего пользователя или создаем новую
     user_history = conversation_history.get(user.id, [])
-
-    # Получаем и пишем в консоль вопрос от пользователя
-    question = message.text
-    print(f"[white]{dt()} - [/white][green]{user.username}: [bold]{question}[/bold][/green]")
 
     # Обнуляем контекст если пришло сообщение о сбросе
     if question.lower() in ["сброс", "reset", "clear", "cls", "restart"]:
