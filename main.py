@@ -1,5 +1,6 @@
 # Telegram Bot ChatGPT with history (context)
 from aiogram import Bot, Dispatcher, executor, types
+from aiogram.utils.exceptions import TelegramAPIError
 from datetime import datetime
 from rich import print
 import config
@@ -86,9 +87,12 @@ async def gpt_answer(message: types.Message):
         print(f"[black]{dt()}[/black][gray] - Conversation history is too big, clearing...[/gray]")
         conversation_history[user.id] = conversation_history[user.id][-4:]
 
+
+@dp.errors_handler(exception=TelegramAPIError)
+async def handle_telegram_api_error(update, exception):
+    # Log the error or perform any other custom handling if necessary
+    print(f"[red]{dt()} - Telegram API Error: {exception}[/red]")
+
 # run long-polling
 if __name__ == "__main__":
-    try:
-        executor.start_polling(dp, skip_updates=True)
-    except Exception as e:
-        print("[red]An error occurred: {}".format(e.__class__.__name__))
+    executor.start_polling(dp, skip_updates=True)
