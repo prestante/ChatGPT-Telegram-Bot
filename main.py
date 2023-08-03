@@ -88,11 +88,9 @@ async def gpt_answer(message: types.Message):
         conversation_history[user.id] = conversation_history[user.id][-4:]
 
 
-@dp.errors_handler(exception=TelegramAPIError)
-async def handle_telegram_api_error(update, exception):
-    # Log the error or perform any other custom handling if necessary
-    print(f"[red]{dt()} - Telegram API Error: {exception}[/red]")
-
 # run long-polling
 if __name__ == "__main__":
-    executor.start_polling(dp, skip_updates=True)
+    try:
+        executor.start_polling(dp, skip_updates=True)
+    except Exception as e:
+        print(f"[red]{dt()} - Telegram API Error: {e}[/red]")
