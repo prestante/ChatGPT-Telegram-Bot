@@ -93,4 +93,4 @@ if __name__ == "__main__":
     try:
         executor.start_polling(dp, skip_updates=True)
     except Exception as e:
-        print(f"[red]{dt()} - Telegram API Error: {e}[/red]")
+        print(f"[red]{dt()} - Error: {e}[/red]")
