@@ -6,7 +6,6 @@ from rich import print
 import config
 import openai
 import tiktoken
-import traceback
 from rich.traceback import install
 install()
 
