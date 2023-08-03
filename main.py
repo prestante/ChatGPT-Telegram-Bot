@@ -14,7 +14,7 @@ openai.api_key = config.OPENAI_TOKEN  # init openai
 bot = Bot(token=config.TOKEN)  # init aiogram
 dp = Dispatcher(bot)  # dispatcher bot
 conversation_history = {}  # dialog history
-approved_users = ['pres', 379179502, 'anton', 984055351]
+approved_users = ['pres', 379179502, 'anton', 984055351, 'Yulia', 406186116]
 model = "gpt-3.5-turbo"
 
 
