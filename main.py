@@ -1,14 +1,13 @@
 # Telegram Bot ChatGPT with history (context)
 from aiogram import Bot, Dispatcher, executor, types
-from aiogram.utils.exceptions import TelegramAPIError
 from datetime import datetime
 from rich import print
 import config
 import openai
 import tiktoken
-from rich.traceback import install
-install()
+import logging
 
+logging.basicConfig(level=logging.FATAL)  # Set up logging to avoid unnecessary Tracebacks
 openai.api_key = config.OPENAI_TOKEN  # init openai
 bot = Bot(token=config.TOKEN)  # init aiogram
 dp = Dispatcher(bot)  # dispatcher bot
@@ -34,30 +33,30 @@ def count_tokens(conversation_history) -> int:
 async def gpt_answer(message: types.Message):
     global conversation_history
 
-    # Вычленяем пользователя из сообщения
+    # Getting the user data from received message
     user = message.from_user
 
-    # Если с юзером еще не было истории сообщений, пишем в консоли его данные
+    # If there is no dialog history with the user, writing their data into to console
     if user.id not in conversation_history:
         print(f"[bold magenta]{dt()} - {user}[/bold magenta]")
 
-    # Получаем и пишем в консоль вопрос от пользователя
+    # Getting the user's question and writing it to the console
     question = message.text
     print(f"[white]{dt()} - [/white][green]{user.username}: [bold]{question}[/bold][/green]")
 
-    # Проверяем есть ли юзер в списке allowed_users, если нет - пишем в консоль и выходим
+    # If user is not in the allowed_users list, writing it to console and exiting
     if user.id not in approved_users:
         print(f"[bold red]{dt()} - User {user.id} is not in the allowed_users list[/bold red]")
         return
 
-    # Игнорируем команду /start
+    # Ignoring /start command
     if message.text.lower() == "/start":
         return
 
-    # Получаем историю диалога для текущего пользователя или создаем новую
+    # Getting a dialog history for the current user or creating a new one
     user_history = conversation_history.get(user.id, [])
 
-    # Обнуляем контекст если пришло сообщение о сбросе
+    # Resetting dialog history for the user if they ask for it and exiting
     if question.lower() in ["сброс", "reset", "clear", "cls", "restart"]:
         conversation_history[user.id] = []
         answer = f"Context for {user.username} has been cleared"
@@ -67,19 +66,18 @@ async def gpt_answer(message: types.Message):
 
     user_history.append({"role": "user", "content": question})
 
-    # Получаем ответ от API OpenAI
-    #answer = openai.ChatCompletion.create(model=model, messages=user_history).choices[0].message.content
-    answer = openai.ChatCompletion.create(model=model, messages=user_history, timeout=30).choices[0].message.content
+    # Getting an answer from OpenAI API
+    answer = openai.ChatCompletion.create(model=model, messages=user_history).choices[0].message.content
     print(f"[white]{dt()} - [/white][cyan]ChatGPT: [bold]{answer}[/bold][/cyan]")
-
     user_history.append({"role": "assistant", "content": answer})
 
-    # Обновляем историю диалога для текущего пользователя
+    # Updating dialog history for the current user
     conversation_history[user.id] = user_history
 
-    # Отправляем ответ в чат пользователю
+    # Sending the answer to the chat with the user
     await message.answer(answer)
 
+    # Counting dialog history in tokens, and if it is more than current limit, clearing it and letting the user know it
     if count_tokens(conversation_history[user.id]) > 3000:
         clear_message = "<b><i>Conversation history is too big, clearing...</i></b>"
         await message.answer(clear_message, parse_mode=types.ParseMode.HTML)
@@ -87,7 +85,7 @@ async def gpt_answer(message: types.Message):
         conversation_history[user.id] = conversation_history[user.id][-4:]
 
 
-# run long-polling
+# Run long-polling
 if __name__ == "__main__":
     try:
         executor.start_polling(dp, skip_updates=True)
