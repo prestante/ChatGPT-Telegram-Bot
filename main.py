@@ -12,7 +12,8 @@ openai.api_key = config.OPENAI_TOKEN  # init openai
 bot = Bot(token=config.TOKEN)  # init aiogram
 dp = Dispatcher(bot)  # dispatcher bot
 conversation_history = {}  # dialog history
-approved_users = ['pres', 379179502, 'anton', 984055351, 'Yulia', 406186116]
+approved_users = ['Pres', 379179502, 'Anton', 984055351, 'Julia', 406186116]
+secret_users = ['Pres', 379179502, 'Julia', 406186116]  # users whose messages won't be printed into the console
 model = "gpt-3.5-turbo"
 
 
@@ -42,7 +43,10 @@ async def gpt_answer(message: types.Message):
 
     # Getting the user's question and writing it to the console
     question = message.text
-    print(f"[white]{dt()} - [/white][green]{user.username}: [bold]{question}[/bold][/green]")
+    if user.id not in secret_users:  # for all
+        print(f"[white]{dt()} - [/white][green]{user.username}: [bold]{question}[/bold][/green]")
+    else:   # for Julia
+        print(f"[white]{dt()} - [/white][green]{user.username}: [bold]question[/bold][/green]")
 
     # If user is not in the allowed_users list, writing it to console and exiting
     if user.id not in approved_users:
@@ -68,7 +72,10 @@ async def gpt_answer(message: types.Message):
 
     # Getting an answer from OpenAI API
     answer = openai.ChatCompletion.create(model=model, messages=user_history).choices[0].message.content
-    print(f"[white]{dt()} - [/white][cyan]ChatGPT: [bold]{answer}[/bold][/cyan]")
+    if user.id not in secret_users:  # for all
+        print(f"[white]{dt()} - [/white][cyan]ChatGPT: [bold]{answer}[/bold][/cyan]")
+    else:   # for Julia
+        print(f"[white]{dt()} - [/white][cyan]ChatGPT: [bold]answer[/bold][/cyan]")
     user_history.append({"role": "assistant", "content": answer})
 
     # Updating dialog history for the current user
