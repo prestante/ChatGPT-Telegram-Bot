@@ -12,9 +12,9 @@ openai.api_key = config.OPENAI_TOKEN  # init openai
 bot = Bot(token=config.TOKEN)  # init aiogram
 dp = Dispatcher(bot)  # dispatcher bot
 conversation_history = {}  # dialog history
-approved_users = ['Pres', 379179502, 'Anton', 984055351, 'Julia', 406186116]
-secret_users = ['Pres', 379179502, 'Julia', 406186116]  # users whose messages won't be printed into the console
-model = "gpt-3.5-turbo"
+approved_users = ['Pres', 379179502, 'Anton', 984055351, 'Julia', 406186116, 'Anna', 402718700]
+secret_users = ['Pres', 379179502, 'Julia', 406186116, 'Anna', 402718700]  # users whose messages won't be printed into the console
+model = "gpt-3.5-turbo-16k"
 
 
 def dt():
@@ -85,7 +85,7 @@ async def gpt_answer(message: types.Message):
     await message.answer(answer)
 
     # Counting dialog history in tokens, and if it is more than current limit, clearing it and letting the user know it
-    if count_tokens(conversation_history[user.id]) > 3000:
+    if count_tokens(conversation_history[user.id]) > 12000:
         clear_message = "<b><i>Conversation history is too big, clearing...</i></b>"
         await message.answer(clear_message, parse_mode=types.ParseMode.HTML)
         print(f"[black]{dt()}[/black][gray] - Conversation history is too big, clearing...[/gray]")
