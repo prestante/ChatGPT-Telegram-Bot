@@ -14,7 +14,10 @@ dp = Dispatcher(bot)  # dispatcher bot
 conversation_history = {}  # dialog history
 approved_users = ['Pres', 379179502, 'Anton', 984055351, 'Julia', 406186116, 'Anna', 402718700]
 secret_users = ['Pres', 379179502, 'Julia', 406186116, 'Anna', 402718700]  # users whose messages won't be printed into the console
-model = "gpt-3.5-turbo-16k"
+users_16k = ['Anna', 402718700]  # users who will use 16k context model
+
+model = "gpt-3.5-turbo"
+model_16k = "gpt-3.5-turbo-16k"
 
 
 def dt():
@@ -71,11 +74,14 @@ async def gpt_answer(message: types.Message):
     user_history.append({"role": "user", "content": question})
 
     # Getting an answer from OpenAI API
-    answer = openai.ChatCompletion.create(model=model, messages=user_history).choices[0].message.content
-    if user.id not in secret_users:  # for all
-        print(f"[white]{dt()} - [/white][cyan]ChatGPT: [bold]{answer}[/bold][/cyan]")
-    else:   # for Julia
+    if user.id in users_16k:  # for users who will use 16k context model
+        answer = openai.ChatCompletion.create(model=model_16k, messages=user_history).choices[0].message.content
+    else:  # for everybody else
+        answer = openai.ChatCompletion.create(model=model, messages=user_history).choices[0].message.content
+    if user.id in secret_users:  # for users whose messages won't be printed in console
         print(f"[white]{dt()} - [/white][cyan]ChatGPT: [bold]answer[/bold][/cyan]")
+    else:   # for everybody else
+        print(f"[white]{dt()} - [/white][cyan]ChatGPT: [bold]{answer}[/bold][/cyan]")
     user_history.append({"role": "assistant", "content": answer})
 
     # Updating dialog history for the current user
