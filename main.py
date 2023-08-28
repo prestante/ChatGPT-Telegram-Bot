@@ -13,7 +13,6 @@ bot = Bot(token=config.TOKEN)  # init aiogram
 dp = Dispatcher(bot)  # dispatcher bot
 conversation_history = {}  # dialog history
 approved_users = ['Pres', 379179502, 'Anton', 984055351, 'Julia', 406186116, 'Anna', 402718700]
-secret_users = ['Pres', 379179502, 'Julia', 406186116, 'Anna', 402718700]  # users whose messages won't be printed into the console
 users_16k = ['Anna', 402718700]  # users who will use 16k context model
 
 model = "gpt-3.5-turbo"
@@ -46,18 +45,18 @@ async def gpt_answer(message: types.Message):
 
     # Getting the user's question and writing it to the console
     question = message.text
-    if user.id not in secret_users:  # for all
-        print(f"[white]{dt()} - [/white][green]{user.username}: [bold]{question}[/bold][/green]")
-    else:   # for Julia
-        print(f"[white]{dt()} - [/white][green]{user.username}: [bold]question[/bold][/green]")
 
-    # If user is not in the allowed_users list, writing it to console and exiting
+    # If user is not in the approved_users list, writing their msg and info to console and exiting
     if user.id not in approved_users:
+        print(f"[white]{dt()} - [/white][green]{user.username}: [bold]{question}[/bold][/green]")
         print(f"[bold red]{dt()} - User {user.id} is not in the allowed_users list[/bold red]")
         return
+    else: # else hiding the user's question by typing the word "question"
+        print(f"[white]{dt()} - [/white][green]{user.username}: [bold]question[/bold][/green]")
 
     # Ignoring /start command
     if message.text.lower() == "/start":
+        print(f"[white]{dt()} - Ignoring /start command[/white]")
         return
 
     # Getting a dialog history for the current user or creating a new one
@@ -73,15 +72,12 @@ async def gpt_answer(message: types.Message):
 
     user_history.append({"role": "user", "content": question})
 
-    # Getting an answer from OpenAI API
+    # Getting an answer from OpenAI API and hiding the model's answer by typing the word "answer"
     if user.id in users_16k:  # for users who will use 16k context model
         answer = openai.ChatCompletion.create(model=model_16k, messages=user_history).choices[0].message.content
     else:  # for everybody else
         answer = openai.ChatCompletion.create(model=model, messages=user_history).choices[0].message.content
-    if user.id in secret_users:  # for users whose messages won't be printed in console
-        print(f"[white]{dt()} - [/white][cyan]ChatGPT: [bold]answer[/bold][/cyan]")
-    else:   # for everybody else
-        print(f"[white]{dt()} - [/white][cyan]ChatGPT: [bold]{answer}[/bold][/cyan]")
+    print(f"[white]{dt()} - [/white][cyan]ChatGPT: [bold]answer[/bold][/cyan]")
     user_history.append({"role": "assistant", "content": answer})
 
     # Updating dialog history for the current user
@@ -91,7 +87,11 @@ async def gpt_answer(message: types.Message):
     await message.answer(answer)
 
     # Counting dialog history in tokens, and if it is more than current limit, clearing it and letting the user know it
-    if count_tokens(conversation_history[user.id]) > 12000:
+    if user.id in users_16k:  # for users who will use 16k context model
+        max_tokens = 12000
+    else:
+        max_tokens = 3000
+    if count_tokens(conversation_history[user.id]) > max_tokens:
         clear_message = "<b><i>Conversation history is too big, clearing...</i></b>"
         await message.answer(clear_message, parse_mode=types.ParseMode.HTML)
         print(f"[black]{dt()}[/black][gray] - Conversation history is too big, clearing...[/gray]")
@@ -100,7 +100,4 @@ async def gpt_answer(message: types.Message):
 
 # Run long-polling
 if __name__ == "__main__":
-    try:
-        executor.start_polling(dp, skip_updates=True)
-    except Exception as e:
-        print(f"[red]{dt()} - Error: {e}[/red]")
+    executor.start_polling(dp, skip_updates=True)
