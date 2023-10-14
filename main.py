@@ -86,7 +86,7 @@ async def gpt_answer(message: types.Message) -> None:
         conversation_history[user.id] = []
         answer = f"Context for {user.username} has been cleared"
         print(f"[white]{dt()} - {answer}[/white]")
-        await message.answer(answer)
+        await message.answer(hbold(answer))
         return
 
     user_history.append({"role": "user", "content": question})
