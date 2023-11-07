@@ -15,7 +15,7 @@ import sys
 from os import getenv
 
 logging.basicConfig(level=logging.FATAL)  # Set up logging to avoid unnecessary Tracebacks
-openai.api_key = getenv('OpenAi')  # init openai
+openai.api_key = getenv('OPENAI_API_KEY')  # init openai
 dp = Dispatcher()  # dispatcher bot
 conversation_history = {}  # dialog history
 approved_users = ['Pres', 379179502, 'Anton', 984055351, 'Julia', 406186116, 'Anna', 402718700]
