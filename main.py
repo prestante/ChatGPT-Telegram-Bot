@@ -96,7 +96,8 @@ async def gpt_answer(message: types.Message) -> None:
         answer = openai.ChatCompletion.create(model=model_16k, messages=user_history).choices[0].message.content
     else:  # for everybody else
         answer = openai.ChatCompletion.create(model=model, messages=user_history).choices[0].message.content
-    print(f"[white]{dt()} - [/white][cyan]ChatGPT: [bold]answer[/bold][/cyan]")
+    #print(f"[white]{dt()} - [/white][cyan]ChatGPT: [bold]answer[/bold][/cyan]")
+    print(f"[white]{dt()} - [/white][cyan]ChatGPT: [bold]{answer}[/bold][/cyan]")
     user_history.append({"role": "assistant", "content": answer})
 
     # Updating dialog history for the current user
