@@ -14,7 +14,7 @@ import logging
 import sys
 from os import getenv
 
-logging.basicConfig(level=logging.FATAL)  # Set up logging to avoid unnecessary Tracebacks
+logging.basicConfig(level=logging.ERROR)  # Set up logging to avoid unnecessary Tracebacks
 openai.api_key = getenv('OPENAI_API_KEY')  # init openai
 dp = Dispatcher()  # dispatcher bot
 conversation_history = {}  # dialog history
@@ -86,7 +86,7 @@ async def gpt_answer(message: types.Message) -> None:
         conversation_history[user.id] = []
         answer = f"Context for {user.username} has been cleared"
         print(f"[white]{dt()} - {answer}[/white]")
-        await message.answer(hbold(answer))
+        await message.answer(answer.replace('_','\_').replace('.','\.').replace('-','\-'))  # For MARKDOWN parsemode characters _.- should be escaped
         return
 
     user_history.append({"role": "user", "content": question})
@@ -96,15 +96,14 @@ async def gpt_answer(message: types.Message) -> None:
         answer = openai.ChatCompletion.create(model=model_16k, messages=user_history).choices[0].message.content
     else:  # for everybody else
         answer = openai.ChatCompletion.create(model=model, messages=user_history).choices[0].message.content
-    #print(f"[white]{dt()} - [/white][cyan]ChatGPT: [bold]answer[/bold][/cyan]")
-    print(f"[white]{dt()} - [/white][cyan]ChatGPT: [bold]{answer}[/bold][/cyan]")
+    print(f"[white]{dt()} - [/white][cyan]ChatGPT: [bold]answer[/bold][/cyan]")
     user_history.append({"role": "assistant", "content": answer})
 
     # Updating dialog history for the current user
     conversation_history[user.id] = user_history
 
     # Sending the answer to the chat with the user
-    await message.answer(answer)
+    await message.answer(answer.replace('_','\_').replace('.','\.').replace('-','\-'))  # For MARKDOWN parsemode characters _.- should be escaped
 
     # Counting dialog history in tokens, and if it is more than current limit, clearing it and letting the user know it
     if user.id in users_16k:  # for users who will use 16k context model
@@ -112,15 +111,15 @@ async def gpt_answer(message: types.Message) -> None:
     else:
         max_tokens = 3000
     if count_tokens(conversation_history[user.id]) > max_tokens:
-        clear_message = "<b><i>Conversation history is too big, clearing...</i></b>"
-        await message.answer(clear_message, parse_mode=types.ParseMode.HTML)
+        clear_message = "Conversation history is too big, clearing..."
+        await message.answer(clear_message)
         print(f"[black]{dt()}[/black][gray] - Conversation history is too big, clearing...[/gray]")
         conversation_history[user.id] = conversation_history[user.id][-4:]
 
 
 async def main() -> None:
     # Initialize Bot instance with a default parse mode which will be passed to all API calls
-    bot = Bot(token=getenv('ChatGPT_Galk_Bot'), parse_mode=ParseMode.HTML)
+    bot = Bot(token=getenv('ChatGPT_Galk_Bot'), parse_mode=ParseMode.MARKDOWN_V2)
     # And the run events dispatching
     await dp.start_polling(bot)
 
