@@ -12,6 +12,7 @@ import tiktoken
 import asyncio
 import logging
 import sys
+import re
 from os import getenv
 
 logging.basicConfig(level=logging.ERROR)  # Set up logging to avoid unnecessary Tracebacks
@@ -103,7 +104,10 @@ async def gpt_answer(message: types.Message) -> None:
     conversation_history[user.id] = user_history
 
     # Sending the answer to the chat with the user
-    answer = f'!@#$%^&*_+-=~`(qwe)123'
+    #answer = f'!@#$%^&*_+-=~`(qwe)123'
+    #pattern = f'([\`*_}}{{[\]()~>#+-=|.!])'
+    #replacement = r"\\\1"
+    #answer = re.sub(pattern, replacement, answer)
     await message.answer(answer.replace('_','\_').replace('.','\.').replace('-','\-').replace('!','\!').replace('(','\(').replace(')','\)').replace('#','\#').replace('+','\+').replace('=','\='))  # For MARKDOWN parsemode characters _.- should be escaped
 
     # Counting dialog history in tokens, and if it is more than current limit, clearing it and letting the user know it
