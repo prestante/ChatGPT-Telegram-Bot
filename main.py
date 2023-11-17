@@ -86,7 +86,7 @@ async def gpt_answer(message: types.Message) -> None:
         conversation_history[user.id] = []
         answer = f"Context for {user.username} has been cleared"
         print(f"[white]{dt()} - {answer}[/white]")
-        await message.answer(answer.replace('_','\_').replace('.','\.').replace('-','\-'))  # For MARKDOWN parsemode characters _.- should be escaped
+        await message.answer(answer.replace('_','\_'))  # For MARKDOWN parsemode characters _.-!() should be escaped
         return
 
     user_history.append({"role": "user", "content": question})
@@ -103,7 +103,8 @@ async def gpt_answer(message: types.Message) -> None:
     conversation_history[user.id] = user_history
 
     # Sending the answer to the chat with the user
-    await message.answer(answer.replace('_','\_').replace('.','\.').replace('-','\-'))  # For MARKDOWN parsemode characters _.- should be escaped
+    answer = f'!@#$%^&*_+-=~`(qwe)123'
+    await message.answer(answer.replace('_','\_').replace('.','\.').replace('-','\-').replace('!','\!').replace('(','\(').replace(')','\)').replace('#','\#').replace('+','\+').replace('=','\='))  # For MARKDOWN parsemode characters _.- should be escaped
 
     # Counting dialog history in tokens, and if it is more than current limit, clearing it and letting the user know it
     if user.id in users_16k:  # for users who will use 16k context model
