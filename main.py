@@ -4,39 +4,31 @@ from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
 from aiogram.types import Message
 from aiogram.utils.markdown import hbold
+from openai import OpenAI
 
 from datetime import datetime
 from rich import print
-import openai
-import tiktoken
+from os import getenv
 import asyncio
 import logging
 import sys
 import re
-from os import getenv
 
 logging.basicConfig(level=logging.ERROR)  # Set up logging to avoid unnecessary Tracebacks
-openai.api_key = getenv('OPENAI_API_KEY')  # init openai
-dp = Dispatcher()  # dispatcher bot
-conversation_history = {}  # dialog history
-approved_users = ['Pres', 379179502, 'Anton', 984055351, 'Julia', 406186116, 'Anna', 402718700]
-users_16k = ['Anna', 402718700]  # users who will use 16k context model
 
-model = "gpt-3.5-turbo"
-model_16k = "gpt-3.5-turbo-16k"
+client = OpenAI()  # init openai client
+client.api_key = getenv('OPENAI_API_KEY')
+model = "gpt-3.5-turbo-1106"
+max_tokens = 12000
+conversation_history = {}  # dialog history
+
+dp = Dispatcher()  # telegram dispatcher bot
+escape_pattern = r'([\\\`\*\_\}\{\]\[\)\(\~\>\<\#\+\-\=\|\.\!])'  # telegram parsemode MARKDOWN_V2 requires many characters to be escaped by \
+approved_users = ['Pres', 379179502, 'Anton', 984055351, 'Julia', 406186116, 'Anna', 402718700]  # telegram users which questions will be processed by OpenAI
 
 
 def dt():
     return datetime.now().isoformat(timespec='milliseconds', sep=' ')
-
-
-def count_tokens(conversation_history) -> int:
-    encoding = tiktoken.encoding_for_model(model)
-    token_count = 0
-    for message in conversation_history:
-        content = message['content']
-        token_count += len(encoding.encode(content))
-    return token_count
 
 
 @dp.message(CommandStart())
@@ -49,7 +41,8 @@ async def command_start_handler(message: Message) -> None:
     # and the target chat will be passed to :ref:`aiogram.methods.send_message.SendMessage`
     # method automatically or call API method directly via
     # Bot instance: `bot.send_message(chat_id=message.chat.id, ...)`
-    await message.answer(f"Hello, {hbold(message.from_user.full_name)}!")
+    await message.answer(re.sub(escape_pattern, r'\\\1', f"Hello, {message.from_user.full_name}!"))
+    print(f"[white]{dt()} - Sending 'Hello {message.from_user.full_name}' to the /start command[/white]")
 
 
 @dp.message()
@@ -63,7 +56,7 @@ async def gpt_answer(message: types.Message) -> None:
     if user.id not in conversation_history:
         print(f"[bold magenta]{dt()} - {user}[/bold magenta]")
 
-    # Getting the user's question and writing it to the console
+    # Getting the user's question
     question = message.text
 
     # If user is not in the approved_users list, writing their msg and info to console and exiting
@@ -74,29 +67,21 @@ async def gpt_answer(message: types.Message) -> None:
     else: # else hiding the user's question by typing the word "question"
         print(f"[white]{dt()} - [/white][green]{user.username}: [bold]question[/bold][/green]")
 
-    # Ignoring /start command
-    if message.text.lower() == "/start":
-        print(f"[white]{dt()} - Ignoring /start command[/white]")
-        return
-
     # Getting a dialog history for the current user or creating a new one
     user_history = conversation_history.get(user.id, [])
 
     # Resetting dialog history for the user if they ask for it and exiting
     if question.lower() in ["сброс", "reset", "clear", "cls", "restart"]:
         conversation_history[user.id] = []
-        answer = f"Context for {user.username} has been cleared"
-        print(f"[white]{dt()} - {answer}[/white]")
-        await message.answer(answer.replace('_','\_'))  # For MARKDOWN parsemode characters _.-!() should be escaped
+        print(f"[white]{dt()} - Context for {user.username} has been cleared[/white]")
+        await message.answer(re.sub(escape_pattern, r'\\\1', f"Context for {user.username} has been cleared"))
         return
 
     user_history.append({"role": "user", "content": question})
 
     # Getting an answer from OpenAI API and hiding the model's answer by typing the word "answer"
-    if user.id in users_16k:  # for users who will use 16k context model
-        answer = openai.ChatCompletion.create(model=model_16k, messages=user_history).choices[0].message.content
-    else:  # for everybody else
-        answer = openai.ChatCompletion.create(model=model, messages=user_history).choices[0].message.content
+    response = client.chat.completions.create(model=model, messages=user_history)
+    answer = response.choices[0].message.content
     print(f"[white]{dt()} - [/white][cyan]ChatGPT: [bold]answer[/bold][/cyan]")
     user_history.append({"role": "assistant", "content": answer})
 
@@ -104,20 +89,11 @@ async def gpt_answer(message: types.Message) -> None:
     conversation_history[user.id] = user_history
 
     # Sending the answer to the chat with the user
-    #answer = f'!@#$%^&*_+-=~`(qwe)123'
-    #pattern = f'([\`*_}}{{[\]()~>#+-=|.!])'
-    #replacement = r"\\\1"
-    #answer = re.sub(pattern, replacement, answer)
-    await message.answer(answer.replace('_','\_').replace('.','\.').replace('-','\-').replace('!','\!').replace('(','\(').replace(')','\)').replace('#','\#').replace('+','\+').replace('=','\='))  # For MARKDOWN parsemode characters _.- should be escaped
+    await message.answer(re.sub(escape_pattern, r'\\\1', answer))
 
-    # Counting dialog history in tokens, and if it is more than current limit, clearing it and letting the user know it
-    if user.id in users_16k:  # for users who will use 16k context model
-        max_tokens = 12000
-    else:
-        max_tokens = 3000
-    if count_tokens(conversation_history[user.id]) > max_tokens:
-        clear_message = "Conversation history is too big, clearing..."
-        await message.answer(clear_message)
+    # Getting the entire request in tokens, and if it is more than current limit, clearing it and letting the user know it
+    if response.usage.total_tokens > max_tokens:
+        await message.answer("_*Conversation history is too big, clearing\.\.\.*_")
         print(f"[black]{dt()}[/black][gray] - Conversation history is too big, clearing...[/gray]")
         conversation_history[user.id] = conversation_history[user.id][-4:]
 
