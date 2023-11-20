@@ -105,11 +105,14 @@ async def gpt_answer(message: types.Message) -> None:
 
 
 async def main() -> None:
-    # Initialize Bot instance with a default parse mode which will be passed to all API calls
-    bot = Bot(token=getenv('ChatGPT_Galk_Bot'), parse_mode=ParseMode.MARKDOWN_V2)
-    # And the run events dispatching
-    await dp.start_polling(bot)
-
+    try:
+        # Initialize Bot instance with a default parse mode which will be passed to all API calls
+        bot = Bot(token=getenv('ChatGPT_Galk_Bot'), parse_mode=ParseMode.MARKDOWN_V2)
+        # And the run events dispatching
+        await dp.start_polling(bot)
+    except Exception as e:
+        # Catch any exception and log only the error message
+        logging.error(f"[black]{dt()}[/black][gray]Error occurred: {e}[/gray]")
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
