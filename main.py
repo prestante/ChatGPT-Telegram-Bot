@@ -14,6 +14,7 @@ import logging
 import sys
 import re
 
+DEBUG = 1  # In DEBUG mode all messages will be written into the console
 logging.basicConfig(level=logging.ERROR)  # Set up logging to avoid unnecessary Tracebacks
 
 client = OpenAI()  # init openai client
@@ -64,7 +65,9 @@ async def gpt_answer(message: types.Message) -> None:
         print(f"[white]{dt()} - [/white][green]{user.username}: [bold]{question}[/bold][/green]")
         print(f"[bold red]{dt()} - User {user.id} is not in the allowed_users list[/bold red]")
         return
-    else: # else hiding the user's question by typing the word "question"
+    elif DEBUG:  # elseif DEBUG mode, printing a question
+        print(f"[white]{dt()} - [/white][green]{user.username}: [bold]{question}[/bold][/green]")
+    else: # else (by default) hiding the user's question by typing the word "question"
         print(f"[white]{dt()} - [/white][green]{user.username}: [bold]question[/bold][/green]")
 
     # Getting a dialog history for the current user or creating a new one
@@ -79,10 +82,13 @@ async def gpt_answer(message: types.Message) -> None:
 
     user_history.append({"role": "user", "content": question})
 
-    # Getting an answer from OpenAI API and hiding the model's answer by typing the word "answer"
+    # Getting an answer from OpenAI API and writing or masking the model's answer into the console
     response = client.chat.completions.create(model=model, messages=user_history)
     answer = response.choices[0].message.content
-    print(f"[white]{dt()} - [/white][cyan]ChatGPT: [bold]answer[/bold][/cyan]")
+    if DEBUG:  # if DEBUG mode, printing an answer into the console
+        print(f"[white]{dt()} - [/white][cyan]ChatGPT: [bold]{answer}[/bold][/cyan]")
+    else:  # else (by default) masking an answer
+        print(f"[white]{dt()} - [/white][cyan]ChatGPT: [bold]answer[/bold][/cyan]")
     user_history.append({"role": "assistant", "content": answer})
 
     # Updating dialog history for the current user
