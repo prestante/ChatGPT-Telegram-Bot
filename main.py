@@ -14,7 +14,7 @@ import logging
 import sys
 import re
 
-DEBUG = 1  # In DEBUG mode all messages will be written into the console
+DEBUG = 0  # In DEBUG mode all messages will be written into the console
 logging.basicConfig(level=logging.ERROR)  # Set up logging to avoid unnecessary Tracebacks
 
 client = OpenAI()  # init openai client
