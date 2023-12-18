@@ -14,7 +14,7 @@ import sys
 import re
 
 DEBUG = 0  # In DEBUG mode all messages will be written into the console
-logging.basicConfig(level=logging.ERROR)  # Set up logging to avoid unnecessary Tracebacks
+logging.basicConfig(level=logging.FATAL)  # Set up logging to avoid unnecessary Tracebacks
 
 client = OpenAI()  # init openai client
 client.api_key = getenv('OPENAI_API_KEY')
