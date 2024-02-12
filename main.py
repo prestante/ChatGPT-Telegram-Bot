@@ -18,7 +18,7 @@ logging.basicConfig(level=logging.FATAL)  # Set up logging to avoid unnecessary 
 
 client = OpenAI()  # init openai client
 client.api_key = getenv('OPENAI_API_KEY')
-model = "gpt-3.5-turbo-1106"
+model = "gpt-3.5-turbo-0125"
 max_tokens = 12000
 conversation_history = {}  # dialog history
 
