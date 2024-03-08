@@ -82,6 +82,7 @@ async def gpt_answer(message: types.Message) -> None:
 
     # Selecting the model depending on user's input
     if question.startswith("4, "):
+        question = question[3:]
         model = model4
     else:
         model = model3
