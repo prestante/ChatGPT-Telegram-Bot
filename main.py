@@ -18,7 +18,8 @@ logging.basicConfig(level=logging.FATAL)  # Set up logging to avoid unnecessary 
 
 client = OpenAI()  # init openai client
 client.api_key = getenv('OPENAI_API_KEY')
-model = "gpt-3.5-turbo-0125"
+model3 = "gpt-3.5-turbo-0125"
+model4 = "gpt-4-turbo-preview"
 max_tokens = 12000
 conversation_history = {}  # dialog history
 
@@ -78,6 +79,12 @@ async def gpt_answer(message: types.Message) -> None:
         print(f"[white]{dt()} - Context for {user.username} has been cleared[/white]")
         await message.answer(re.sub(escape_pattern, r'\\\1', f"Context for {user.username} has been cleared"))
         return
+
+    # Selecting the model depending on user's input
+    if question.startswith("4, "):
+        model = model4
+    else:
+        model = model3
 
     user_history.append({"role": "user", "content": question})
 
