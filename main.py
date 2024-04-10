@@ -106,7 +106,8 @@ async def gpt_answer(message: types.Message) -> None:
 
     # Getting the entire request in tokens, and if it is more than current limit, clearing it and letting the user know it
     if response.usage.total_tokens > max_tokens:
-        await message.answer("_*Conversation history is too big, clearing\.\.\.*_")
+        #await message.answer("_*Conversation history is too big, clearing\.\.\.*_")
+        await message.answer("_*Conversation history is too big, clearing...*_")
         print(f"[black]{dt()}[/black][gray] - Conversation history is too big, clearing...[/gray]")
         conversation_history[user.id] = conversation_history[user.id][-4:]
 
