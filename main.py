@@ -18,14 +18,14 @@ logging.basicConfig(level=logging.FATAL)  # Set up logging to avoid unnecessary 
 
 client = OpenAI()  # init openai client
 client.api_key = getenv('OPENAI_API_KEY')
-model3 = "gpt-3.5-turbo-0125"
-model4 = "gpt-4-turbo-preview"
+model3 = "gpt-3.5-turbo"
+model4 = "gpt-4o"
 max_tokens = 12000
 conversation_history = {}  # dialog history
 
 dp = Dispatcher()  # telegram dispatcher bot
 escape_pattern = r'([\\\`\*\_\}\{\]\[\)\(\~\>\<\#\+\-\=\|\.\!])'  # telegram parsemode MARKDOWN_V2 requires many characters to be escaped by \
-approved_users = ['Pres', 379179502, 'Anton', 984055351, 'Julia', 406186116, 'Anna', 402718700]  # telegram users which questions will be processed by OpenAI
+approved_users = ['Pres', 379179502, 'Anton', 984055351, 'Julia', 406186116, 'Anna', 402718700, 'Albina', 290397532]  # telegram users which questions will be processed by OpenAI
 
 
 def dt():
