@@ -80,9 +80,8 @@ async def gpt_answer(message: types.Message) -> None:
         await message.answer(re.sub(escape_pattern, r'\\\1', f"Context for {user.username} has been cleared"))
         return
 
-    # Selecting the model depending on user's input
-    if question.startswith("4, "):
-        question = question[3:]
+    # Selecting the model depending on user
+    if user.id == 379179502:
         model = model4
     else:
         model = model3
