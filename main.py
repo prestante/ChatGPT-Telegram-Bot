@@ -42,6 +42,15 @@ async def command_start_handler(message: Message) -> None:
     # and the target chat will be passed to :ref:`aiogram.methods.send_message.SendMessage`
     # method automatically or call API method directly via
     # Bot instance: `bot.send_message(chat_id=message.chat.id, ...)`
+
+    # Getting the user data from received message
+    user = message.from_user
+
+    # If there is no dialog history with the user, writing their data into to console
+    if user.id not in conversation_history:
+        print(f"[bold magenta]{dt()} - {user}[/bold magenta]")
+    
+    # Sending greetings to the user
     await message.answer(f"Hello, {message.from_user.full_name}!")
     print(f"[white]{dt()} - Sending 'Hello {message.from_user.full_name}' to the /start command[/white]")
 
