@@ -24,7 +24,7 @@ max_tokens = 12000
 conversation_history = {}  # dialog history
 
 dp = Dispatcher()  # telegram dispatcher bot
-escape_pattern = r'([\\\`\*\_\}\{\]\[\)\(\~\>\<\#\+\-\=\|\.\!])'  # telegram parsemode MARKDOWN_V2 requires many characters to be escaped by \
+# escape_pattern = r'([\\\`\*\_\}\{\]\[\)\(\~\>\<\#\+\-\=\|\.\!])'  # telegram parsemode MARKDOWN_V2 requires many characters to be escaped by \
 approved_users = ['Pres', 379179502, 'Anton', 984055351, 'Julia', 406186116, 'Anna', 402718700, 'Albina', 290397532]  # telegram users which questions will be processed by OpenAI
 
 
@@ -42,7 +42,7 @@ async def command_start_handler(message: Message) -> None:
     # and the target chat will be passed to :ref:`aiogram.methods.send_message.SendMessage`
     # method automatically or call API method directly via
     # Bot instance: `bot.send_message(chat_id=message.chat.id, ...)`
-    await message.answer(re.sub(escape_pattern, r'\\\1', f"Hello, {message.from_user.full_name}!"))
+    await message.answer(f"Hello, {message.from_user.full_name}!")
     print(f"[white]{dt()} - Sending 'Hello {message.from_user.full_name}' to the /start command[/white]")
 
 
@@ -77,7 +77,7 @@ async def gpt_answer(message: types.Message) -> None:
     if question.lower() in ["сброс", "reset", "clear", "cls", "restart"]:
         conversation_history[user.id] = []
         print(f"[white]{dt()} - Context for {user.username} has been cleared[/white]")
-        await message.answer(re.sub(escape_pattern, r'\\\1', f"Context for {user.username} has been cleared"))
+        await message.answer(f"Context for {user.username} has been cleared")
         return
 
     # Selecting the model depending on user
@@ -101,7 +101,7 @@ async def gpt_answer(message: types.Message) -> None:
     conversation_history[user.id] = user_history
 
     # Sending the answer to the chat with the user
-    await message.answer(re.sub(escape_pattern, r'\\\1', answer))
+    await message.answer(answer)
 
     # Getting the entire request in tokens, and if it is more than current limit, clearing it and letting the user know it
     if response.usage.total_tokens > max_tokens:
@@ -114,7 +114,7 @@ async def gpt_answer(message: types.Message) -> None:
 async def main() -> None:
     try:
         # Initialize Bot instance with a default parse mode which will be passed to all API calls
-        bot = Bot(token=getenv('ChatGPT_Galk_Bot'), parse_mode=ParseMode.MARKDOWN_V2)
+        bot = Bot(token=getenv('ChatGPT_Galk_Bot'))
         # And the run events dispatching
         await dp.start_polling(bot)
     except Exception as e:
