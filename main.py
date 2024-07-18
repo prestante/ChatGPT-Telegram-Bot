@@ -18,9 +18,9 @@ logging.basicConfig(level=logging.FATAL)  # Set up logging to avoid unnecessary 
 
 client = OpenAI()  # init openai client
 client.api_key = getenv('OPENAI_API_KEY')
-model3 = "gpt-3.5-turbo"
+model3 = "gpt-4o-mini"
 model4 = "gpt-4o"
-max_tokens = 12000
+max_tokens = 90000
 conversation_history = {}  # dialog history
 
 dp = Dispatcher()  # telegram dispatcher bot
